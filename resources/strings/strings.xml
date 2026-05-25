@@ -1,0 +1,14 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <string id="AppName">TimerPro</string>
+    <string id="DefaultTagName">Data field name</string>
+    <string id="OpenLapTagName">Open lap alert tag</string>
+    <string id="WorkoutAlertReadyTagName">Workout alert READY tag</string>
+    <string id="WorkoutRedAlertSetTagName">Workout red alert SET tag</string>
+    <string id="WorkoutRedAlertGoTagName">Workout red alert GO tag</string>
+    <string id="WorkoutAlertThesholdName">Workout alert theshold in seconds</string>
+    <string id="WorkoutRedAlertThesholdName">Workout red alert theshold in seconds</string>
+    <string id="OpenLapDisplayInSecondsName">Display open lap tag each second defined</string>
+    <string id="AllowedOffCourseDistanceName">Allowed off course distance for navigation mode</string>
+    <string id="AdvancedSettingsName">Advanced settings</string>
+    <string id="AdvancedSettingsDesc">Access lower-level configurations for advanced customization</string>
+</strings>

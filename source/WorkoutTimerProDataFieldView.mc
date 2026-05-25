@@ -1,0 +1,160 @@
+import Toybox.Activity;
+import Toybox.Application;
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.WatchUi;
+
+class WorkoutTimerProDataFieldView extends WatchUi.DataField {
+
+    hidden var mActivityState as ActivityState = DEFAULT;
+    hidden var mActivityTimer = 0;
+    hidden var mActivityDistance = 0.0f;
+    hidden var mWorkoutStepTimer = 0;
+    hidden var mWorkoutPrevStepCompleteTime = 0;
+    hidden var mDistanceToDestination = 0.0f;
+    hidden var mTimeToDestination = 0;
+
+    function initialize() {
+        DataField.initialize();
+    }
+
+    // Set your layout here. Anytime the size of obscurity of
+    // the draw context is changed this will be called.
+    function onLayout(dc as Dc) as Void {
+        View.setLayout(Rez.Layouts.MainLayout(dc));
+        var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
+        var alignments = computeAlignments(dc);
+        timerGauge.setAlignments(alignments[0], alignments[1], alignments[2], alignments[3], alignments[4], alignments[5], alignments[6]);
+    }
+
+    // The given info object contains all the current workout information.
+    // Calculate a value and save it locally in this method.
+    // Note that compute() and onUpdate() are asynchronous, and there is no
+    // guarantee that compute() will be called before onUpdate().
+    function compute(info as Activity.Info) as Void {
+        mActivityState = DEFAULT;
+        if (info.timerTime != null && info.elapsedDistance != null) {
+            mActivityTimer = (info.timerTime / 1000).toNumber();
+            mActivityDistance = info.elapsedDistance / 1000;
+            if (mActivityDistance >= 0.1) {
+                mActivityState = DISTANCE;
+                mDistanceToDestination = 0;
+                mTimeToDestination = 0;
+                if (info has :distanceToDestination && info has :offCourseDistance
+                            && info.distanceToDestination != null && info.offCourseDistance != null && info.averageSpeed != null
+                            && info.averageSpeed > 0 && info.distanceToDestination > 0
+                            && info.offCourseDistance < Properties.getValue("AllowedOffCourseDistance")) {
+                        mActivityState = NAVIGATION;
+                        mDistanceToDestination = info.distanceToDestination;
+                        mTimeToDestination = (mDistanceToDestination / info.averageSpeed).toNumber();
+                }
+            } 
+            var workoutStepInfo = Activity.getCurrentWorkoutStep();
+            if (workoutStepInfo != null) {
+                mActivityState = WORKOUT;
+                var workoutStep = workoutStepInfo.step;
+                if (workoutStep instanceof Activity.WorkoutIntervalStep) {
+                    workoutStep = workoutStep.activeStep;
+                }
+                mWorkoutStepTimer = mActivityTimer - mWorkoutPrevStepCompleteTime;   
+                if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_TIME) { 
+                    if (workoutStep.durationValue != null) {
+                        mWorkoutStepTimer = (workoutStep.durationValue - mWorkoutStepTimer).toNumber();
+                        if (mWorkoutStepTimer < Properties.getValue("WorkoutRedAlertTheshold")) {
+                            mActivityState = WORKOUT_ALERT_RED;
+                        } else if (mWorkoutStepTimer < Properties.getValue("WorkoutAlertTheshold")) {
+                            mActivityState = WORKOUT_ALERT;
+                        }
+                    } 
+                } else if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_OPEN) {
+                    mActivityState = WORKOUT_OPEN_LAP;
+                }
+            }         
+        }
+    }
+
+    // Display the value you computed here. This will be called
+    // once a second when the data field is visible.
+    function onUpdate(dc as Dc) as Void {
+        var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
+        if (mActivityState == WORKOUT || mActivityState == WORKOUT_ALERT 
+                || mActivityState == WORKOUT_ALERT_RED || mActivityState == WORKOUT_OPEN_LAP) {
+            timerGauge.setValues(formatTime(mWorkoutStepTimer), formatTime(mActivityTimer), mActivityDistance >= 0.5 ? mActivityDistance.format("%.1f") : null, mTimeToDestination > 0 ? formatTime(mTimeToDestination) : null, mActivityState);
+        } else if (mActivityState == NAVIGATION) {
+            timerGauge.setValues(formatTime(mActivityTimer), formatTime(mTimeToDestination), mDistanceToDestination.format("%.1f"), mActivityDistance >= 0.5 ? mActivityDistance.format("%.1f") : null, mActivityState);
+        } else if (mActivityState == DISTANCE) {
+            timerGauge.setValues(formatTime(mActivityTimer), mActivityDistance.format("%.1f"), null, null, mActivityState);
+        } else {
+            timerGauge.setValues(formatTime(mActivityTimer), mActivityDistance.format("%.1f"), null, null, mActivityState);
+        }
+        View.onUpdate(dc);
+    }
+
+    function onWorkoutStepComplete() as Void {
+        var activityInfo = Activity.getActivityInfo();
+        if (activityInfo != null && activityInfo.timerTime != null) {
+            mWorkoutPrevStepCompleteTime = (activityInfo.timerTime / 1000).toNumber();
+        }
+    }
+
+    function formatTime(seconds as Number) as String {
+        var hrs = seconds / 3600;
+        var mins = (seconds % 3600) / 60;
+        var secs = seconds % 60;
+        if (hrs > 0) {
+            return format("$1$:$2$:$3$", [hrs.format("%1d"), mins.format("%02d"), secs.format("%02d")]);
+        } else if (mins > 0 || mActivityState != WORKOUT_ALERT_RED) {
+            return format("$1$:$2$", [mins.format("%1d"), secs.format("%02d")]);
+        } else {
+            return format("$1$", [secs.format("%1d")]);
+        }
+    }
+
+    function computeAlignments(dc as Dc) as [FontType, FontType, Number, Number, Number, Number, Number] {
+        var fontPrimary = Graphics.FONT_NUMBER_THAI_HOT;
+        var fontSecondary = Graphics.FONT_SMALL;
+        var screenHeight = dc.getHeight();
+        var height1 = dc.getFontHeight(fontSecondary);
+        var height2 = dc.getFontHeight(fontPrimary);
+        var flag = false;
+        while (height1 + height2 > screenHeight) {
+            if (flag) {
+                fontSecondary = (fontSecondary > 0 ? fontSecondary - 1 : 0) as FontType;
+            } else
+            {
+                fontPrimary = (fontPrimary > 0 ? fontPrimary - 1 : 0) as FontType;
+            }
+            flag = !flag;            
+            height1 = dc.getFontHeight(fontSecondary);
+            height2 = dc.getFontHeight(fontPrimary);
+        }     
+        var screenWidth = dc.getWidth();
+        while (screenWidth < dc.getTextWidthInPixels("00:00:00", fontPrimary)) {
+            fontPrimary = (fontPrimary > 0 ? fontPrimary - 1 : 0) as FontType;
+        }
+        while (screenWidth < dc.getTextWidthInPixels("00:00:00", fontSecondary) * 1.5) {
+            fontSecondary = (fontSecondary > 0 ? fontSecondary - 1 : 0) as FontType;
+        }
+        height1 = dc.getFontHeight(fontSecondary);
+        height2 = dc.getFontHeight(fontPrimary);
+        var obscurityFlags = DataField.getObscurityFlags();
+        var xShift = 0;
+        if (obscurityFlags & OBSCURE_LEFT != 0 && obscurityFlags & OBSCURE_RIGHT == 0) {
+            xShift = dc.getTextWidthInPixels("0", fontSecondary);
+        } else if (obscurityFlags & OBSCURE_RIGHT != 0 && obscurityFlags & OBSCURE_LEFT == 0) {
+            xShift = -dc.getTextWidthInPixels("0", fontSecondary);
+        }
+        var y1 = (screenHeight - height1 - height2) / 2;
+        y1 = y1 >= 5 ? y1 : 5;
+        var y2 = y1 + height1;
+        if (obscurityFlags & OBSCURE_TOP != 0 && obscurityFlags & OBSCURE_BOTTOM == 0) {
+            y2 = screenHeight - height2;
+            y1 = y2 - height1;
+        } else if (obscurityFlags & OBSCURE_BOTTOM != 0 && obscurityFlags & OBSCURE_TOP == 0) {
+            y2 = 0;
+            y1 = height2;
+        }
+        return [fontPrimary, fontSecondary, height1, height2, y1, y2, xShift];
+    }
+
+}

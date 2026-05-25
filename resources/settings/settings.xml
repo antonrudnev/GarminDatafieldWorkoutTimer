@@ -1,0 +1,31 @@
+<settings>
+    <setting propertyKey="@Properties.DefaultTag" title="@Strings.DefaultTagName">
+        <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+    </setting>
+    <group id="advancedSettings" title="@Strings.AdvancedSettingsName" description="@Strings.AdvancedSettingsDesc">
+        <setting propertyKey="@Properties.OpenLapTag" title="@Strings.OpenLapTagName">
+            <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+        </setting>
+        <setting propertyKey="@Properties.WorkoutAlertReadyTag" title="@Strings.WorkoutAlertReadyTagName">
+            <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+        </setting>
+        <setting propertyKey="@Properties.WorkoutRedAlertSetTag" title="@Strings.WorkoutRedAlertSetTagName">
+            <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+        </setting>
+        <setting propertyKey="@Properties.WorkoutRedAlertGoTag" title="@Strings.WorkoutRedAlertGoTagName">
+            <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+        </setting>
+        <setting propertyKey="@Properties.WorkoutAlertTheshold" title="@Strings.WorkoutAlertThesholdName">
+            <settingConfig type="numeric" min="0" />
+        </setting>
+        <setting propertyKey="@Properties.WorkoutRedAlertTheshold" title="@Strings.WorkoutRedAlertThesholdName">
+            <settingConfig type="numeric" min="0" />
+        </setting>
+        <setting propertyKey="@Properties.OpenLapDisplayInSeconds" title="@Strings.OpenLapDisplayInSecondsName">
+            <settingConfig type="numeric" min="1" />
+        </setting>
+        <setting propertyKey="@Properties.AllowedOffCourseDistance" title="@Strings.AllowedOffCourseDistanceName">
+            <settingConfig type="numeric" min="100" />
+        </setting>
+    </group>
+</settings>
