@@ -6,13 +6,14 @@ import Toybox.WatchUi;
 
 class WorkoutTimerProDataFieldView extends WatchUi.DataField {
 
-    hidden var mActivityState as ActivityState = DEFAULT;
+    hidden var mActivityState = DEFAULT;
     hidden var mActivityTimer = 0;
     hidden var mActivityDistance = 0.0f;
     hidden var mWorkoutStepTimer = 0;
     hidden var mWorkoutPrevStepCompleteTime = 0;
     hidden var mDistanceToDestination = 0.0f;
     hidden var mTimeToDestination = 0;
+    hidden var phoneConnected = false;
 
     function initialize() {
         DataField.initialize();
@@ -36,7 +37,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         if (info.timerTime != null && info.elapsedDistance != null) {
             mActivityTimer = (info.timerTime / 1000).toNumber();
             mActivityDistance = info.elapsedDistance / 1000;
-            if (mActivityDistance >= 0.1) {
+            if (mActivityDistance >= 0.2) {
                 mActivityState = DISTANCE;
                 mDistanceToDestination = 0;
                 mTimeToDestination = 0;
@@ -44,14 +45,14 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                             && info.distanceToDestination != null && info.offCourseDistance != null && info.averageSpeed != null
                             && info.averageSpeed > 0 && info.distanceToDestination > 0
                             && info.offCourseDistance < Properties.getValue("AllowedOffCourseDistance")) {
-                        mActivityState = NAVIGATION;
+                        mActivityState = mActivityState | NAVIGATION;
                         mDistanceToDestination = info.distanceToDestination;
                         mTimeToDestination = (mDistanceToDestination / info.averageSpeed).toNumber();
                 }
             } 
             var workoutStepInfo = Activity.getCurrentWorkoutStep();
             if (workoutStepInfo != null) {
-                mActivityState = WORKOUT;
+                mActivityState = mActivityState | WORKOUT;
                 var workoutStep = workoutStepInfo.step;
                 if (workoutStep instanceof Activity.WorkoutIntervalStep) {
                     workoutStep = workoutStep.activeStep;
@@ -60,16 +61,22 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                 if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_TIME) { 
                     if (workoutStep.durationValue != null) {
                         mWorkoutStepTimer = (workoutStep.durationValue - mWorkoutStepTimer).toNumber();
+                        if (mWorkoutStepTimer < Properties.getValue("WorkoutAlertTheshold")) {
+                            mActivityState = mActivityState | WORKOUT_ALERT;
+                        }
                         if (mWorkoutStepTimer < Properties.getValue("WorkoutRedAlertTheshold")) {
-                            mActivityState = WORKOUT_ALERT_RED;
-                        } else if (mWorkoutStepTimer < Properties.getValue("WorkoutAlertTheshold")) {
-                            mActivityState = WORKOUT_ALERT;
+                            mActivityState = mActivityState | WORKOUT_ALERT_RED;
                         }
                     } 
                 } else if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_OPEN) {
-                    mActivityState = WORKOUT_OPEN_LAP;
+                    mActivityState = mActivityState | WORKOUT_OPEN_LAP;
                 }
-            }         
+            }
+            if (System.getDeviceSettings().phoneConnected) {
+                phoneConnected = true;
+            } else if (phoneConnected) {
+                mActivityState = mActivityState | PHONE_ALERT;
+            }
         }
     }
 
@@ -77,15 +84,12 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     // once a second when the data field is visible.
     function onUpdate(dc as Dc) as Void {
         var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
-        if (mActivityState == WORKOUT || mActivityState == WORKOUT_ALERT 
-                || mActivityState == WORKOUT_ALERT_RED || mActivityState == WORKOUT_OPEN_LAP) {
-            timerGauge.setValues(formatTime(mWorkoutStepTimer), formatTime(mActivityTimer), mActivityDistance >= 0.5 ? mActivityDistance.format("%.1f") : null, mTimeToDestination > 0 ? formatTime(mTimeToDestination) : null, mActivityState);
-        } else if (mActivityState == NAVIGATION) {
-            timerGauge.setValues(formatTime(mActivityTimer), formatTime(mTimeToDestination), mDistanceToDestination.format("%.1f"), mActivityDistance >= 0.5 ? mActivityDistance.format("%.1f") : null, mActivityState);
-        } else if (mActivityState == DISTANCE) {
-            timerGauge.setValues(formatTime(mActivityTimer), mActivityDistance.format("%.1f"), null, null, mActivityState);
+        if (mActivityState & WORKOUT != 0) {
+            timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), mActivityDistance.format("%.1f"), formatTime(mTimeToDestination, false), mActivityState);
+        } else if (mActivityState & NAVIGATION !=0) {
+            timerGauge.setValues(formatTime(mActivityTimer, false), formatTime(mTimeToDestination, false), mDistanceToDestination.format("%.1f"), mActivityDistance.format("%.1f"), mActivityState);
         } else {
-            timerGauge.setValues(formatTime(mActivityTimer), mActivityDistance.format("%.1f"), null, null, mActivityState);
+            timerGauge.setValues(formatTime(mActivityTimer, false), mActivityDistance.format("%.1f"), null, null, mActivityState);
         }
         View.onUpdate(dc);
     }
@@ -97,13 +101,13 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         }
     }
 
-    function formatTime(seconds as Number) as String {
+    function formatTime(seconds as Number, secOnly as Boolean) as String {
         var hrs = seconds / 3600;
         var mins = (seconds % 3600) / 60;
         var secs = seconds % 60;
         if (hrs > 0) {
             return format("$1$:$2$:$3$", [hrs.format("%1d"), mins.format("%02d"), secs.format("%02d")]);
-        } else if (mins > 0 || mActivityState != WORKOUT_ALERT_RED) {
+        } else if (mins > 0 || !secOnly) {
             return format("$1$:$2$", [mins.format("%1d"), secs.format("%02d")]);
         } else {
             return format("$1$", [secs.format("%1d")]);

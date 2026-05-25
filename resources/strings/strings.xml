@@ -2,6 +2,7 @@
     <string id="AppName">TimerPro</string>
     <string id="DefaultTagName">Data field name</string>
     <string id="OpenLapTagName">Open lap alert tag</string>
+    <string id="PhoneAlertTagName">Phone disconnected alert tag</string>
     <string id="WorkoutAlertReadyTagName">Workout alert READY tag</string>
     <string id="WorkoutRedAlertSetTagName">Workout red alert SET tag</string>
     <string id="WorkoutRedAlertGoTagName">Workout red alert GO tag</string>

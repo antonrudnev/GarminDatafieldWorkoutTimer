@@ -4,13 +4,14 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 enum ActivityState {
-    WORKOUT,
-    WORKOUT_ALERT,
-    WORKOUT_ALERT_RED,
-    WORKOUT_OPEN_LAP,
-    NAVIGATION,
-    DISTANCE,
-    DEFAULT
+    DEFAULT             = 1,
+    DISTANCE            = 2,
+    NAVIGATION          = 4,
+    WORKOUT             = 8,
+    WORKOUT_ALERT       = 16,
+    WORKOUT_ALERT_RED   = 32,
+    WORKOUT_OPEN_LAP    = 64,
+    PHONE_ALERT         = 128
 }
 
 class TimerGauge extends WatchUi.Drawable {
@@ -26,7 +27,7 @@ class TimerGauge extends WatchUi.Drawable {
     hidden var mTextSecondary as String;
     hidden var mTextExtra1 as String or Null;
     hidden var mTextExtra2 as String or Null;
-    hidden var mState as ActivityState;
+    hidden var mState;
 
     hidden var mRectWidth;
     hidden var mRectX;
@@ -46,7 +47,7 @@ class TimerGauge extends WatchUi.Drawable {
         updateStyle();
     }
 
-    function setValues(textPrimary as String, textSecondary as String, textExtra1 as String or Null, textExtra2 as String or Null, state as ActivityState) as Void {
+    function setValues(textPrimary as String, textSecondary as String, textExtra1 as String or Null, textExtra2 as String or Null, state as Number) as Void {
         mTextPrimary = textPrimary;
         mTextSecondary = textSecondary;
         mTextExtra1 = textExtra1;
@@ -73,7 +74,7 @@ class TimerGauge extends WatchUi.Drawable {
         mRectWidth = mRectWidth > minWidth ? mRectWidth : minWidth;
         mRectWidth = mRectWidth < maxWidth ? mRectWidth : maxWidth;
         mRectX = (screenWidth / 2) - (mRectWidth / 2);
-        
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(screenWidth / 2 + mXShift, mY2, mFontPrimary, mTextPrimary, Graphics.TEXT_JUSTIFY_CENTER);
 
@@ -83,49 +84,15 @@ class TimerGauge extends WatchUi.Drawable {
         dc.setColor(mBorderColor, Graphics.COLOR_TRANSPARENT);
         dc.drawRoundedRectangle(mRectX + mXShift, mY1, mRectWidth, mHeight1, 50);
         dc.setColor(mTextColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(screenWidth / 2 + mXShift, mY1, mFontSecondary, mTextSecondary, Graphics.TEXT_JUSTIFY_CENTER);        
+        dc.drawText(screenWidth / 2 + mXShift, mY1, mFontSecondary, mTextSecondary, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     function updateStyle() {
-        switch (mState) {
-            case WORKOUT: {
-                var seconds = System.getClockTime().sec;
-                if (seconds % 5 > 1 || mTextExtra1 == null) {
-                    mTextColor = Graphics.COLOR_WHITE;
-                    mBorderColor = Graphics.COLOR_BLUE;
-                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
-                } else {
-                    if (seconds % 10 > 2 || mTextExtra2 == null) {
-                        mTextSecondary = mTextExtra1;
-                        mTextColor = Graphics.COLOR_WHITE;
-                        mBorderColor = Graphics.COLOR_BLACK;
-                        mGaugeColor = Graphics.COLOR_DK_GRAY;
-                    } else {
-                        mTextSecondary = mTextExtra2;
-                        mTextColor = Graphics.COLOR_WHITE;
-                        mBorderColor = Graphics.COLOR_DK_GREEN;
-                        mGaugeColor = Graphics.COLOR_TRANSPARENT;
-                    }
-                }
-                break;
-            }
-            case WORKOUT_ALERT: {
+        var seconds = System.getClockTime().sec;
+        if (mState & WORKOUT != 0) {
+            if (mState & WORKOUT_ALERT_RED != 0) {
                 mTextColor = Graphics.COLOR_WHITE;
-                var seconds = System.getClockTime().sec;
-                if (seconds % 2 > 0) {
-                    mTextSecondary = Properties.getValue("WorkoutAlertReadyTag");
-                    mBorderColor = Graphics.COLOR_WHITE;
-                    mGaugeColor = Graphics.COLOR_DK_BLUE;
-                } else {
-                    mBorderColor = Graphics.COLOR_BLUE;
-                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
-                }
-                break;
-            }
-            case WORKOUT_ALERT_RED: {
-                mTextColor = Graphics.COLOR_WHITE;
-                var seconds = System.getClockTime().sec;
-                if (seconds % 2 > 0) {
+                if (seconds & 1) {
                     mTextSecondary = Properties.getValue("WorkoutRedAlertSetTag");
                     mBorderColor = Graphics.COLOR_RED;
                     mGaugeColor = Graphics.COLOR_DK_BLUE;
@@ -134,10 +101,19 @@ class TimerGauge extends WatchUi.Drawable {
                     mBorderColor = Graphics.COLOR_BLACK;
                     mGaugeColor = Graphics.COLOR_RED;
                 }
-                break;
-            }
-            case WORKOUT_OPEN_LAP: {
-                var seconds = System.getClockTime().sec;
+                return;
+            } else if (mState & WORKOUT_ALERT != 0) {
+                mTextColor = Graphics.COLOR_WHITE;
+                if (seconds & 1) {
+                    mTextSecondary = Properties.getValue("WorkoutAlertReadyTag");
+                    mBorderColor = Graphics.COLOR_WHITE;
+                    mGaugeColor = Graphics.COLOR_DK_BLUE;
+                } else {
+                    mBorderColor = Graphics.COLOR_BLUE;
+                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                }
+                return;
+            } else if (mState & WORKOUT_OPEN_LAP != 0) {
                 if (seconds % Properties.getValue("OpenLapDisplayInSeconds") > 0) {
                     mTextColor = Graphics.COLOR_BLACK;
                     mBorderColor = Graphics.COLOR_BLACK;
@@ -148,41 +124,56 @@ class TimerGauge extends WatchUi.Drawable {
                     mBorderColor = Graphics.COLOR_YELLOW;
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 }
-                break;
-            }
-            case NAVIGATION: {
-                var seconds = System.getClockTime().sec; 
-                if (seconds % 5 > 1) {
-                    mTextColor = Graphics.COLOR_WHITE;
-                    mBorderColor = Graphics.COLOR_DK_GREEN;
+            } else {
+                mTextColor = Graphics.COLOR_WHITE;
+                if (seconds % 5 > 1 || mState & DISTANCE == 0) {
+                    mBorderColor = Graphics.COLOR_BLUE;
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 } else {
-                    mBorderColor = Graphics.COLOR_BLACK;
-                    if (seconds % 10 > 2 || mTextExtra2 == null) {
+                    if (seconds % 10 > 2 || mState & NAVIGATION == 0) {
                         mTextSecondary = mTextExtra1;
-                        mTextColor = Graphics.COLOR_BLACK;
-                        mGaugeColor = Graphics.COLOR_DK_GREEN;
+                        mBorderColor = Graphics.COLOR_BLACK;
+                        mGaugeColor = Graphics.COLOR_DK_GRAY;
                     } else {
                         mTextSecondary = mTextExtra2;
-                        mTextColor = Graphics.COLOR_WHITE;
-                        mGaugeColor = Graphics.COLOR_DK_GRAY;
+                        mBorderColor = Graphics.COLOR_DK_GREEN;
+                        mGaugeColor = Graphics.COLOR_TRANSPARENT;
                     }
                 }
-                break;
             }
-            case DISTANCE: {
-                mTextColor = Graphics.COLOR_LT_GRAY;
-                mBorderColor = Graphics.COLOR_DK_GRAY;
-                mGaugeColor = Graphics.COLOR_TRANSPARENT;
-                break;
-            }
-            default: {
-                mTextSecondary = Properties.getValue("DefaultTag");
+        } else if (mState & NAVIGATION != 0) {
+            if (seconds % 5 > 1) {
                 mTextColor = Graphics.COLOR_WHITE;
-                mBorderColor = Graphics.COLOR_TRANSPARENT;
+                mBorderColor = Graphics.COLOR_DK_GREEN;
                 mGaugeColor = Graphics.COLOR_TRANSPARENT;
-                break;
+            } else {
+                mBorderColor = Graphics.COLOR_BLACK;
+                if (seconds % 10 > 2) {
+                    mTextSecondary = mTextExtra1;
+                    mTextColor = Graphics.COLOR_BLACK;
+                    mGaugeColor = Graphics.COLOR_DK_GREEN;
+                } else {
+                    mTextSecondary = mTextExtra2;
+                    mTextColor = Graphics.COLOR_WHITE;
+                    mGaugeColor = Graphics.COLOR_DK_GRAY;
+                }
             }
+        } else if (mState & DISTANCE != 0) {
+            mTextColor = Graphics.COLOR_LT_GRAY;
+            mBorderColor = Graphics.COLOR_DK_GRAY;
+            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+        } else {
+            mTextSecondary = Properties.getValue("DefaultTag");
+            mTextColor = Graphics.COLOR_WHITE;
+            mBorderColor = Graphics.COLOR_TRANSPARENT;
+            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+        }
+
+        if (seconds & 1 && mState & PHONE_ALERT != 0) {
+            mTextSecondary = Properties.getValue("PhoneAlertTag");
+            mTextColor = Graphics.COLOR_RED;
+            mBorderColor = Graphics.COLOR_RED;
+            mGaugeColor = Graphics.COLOR_TRANSPARENT;
         }
     }
 

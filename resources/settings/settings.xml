@@ -6,6 +6,9 @@
         <setting propertyKey="@Properties.OpenLapTag" title="@Strings.OpenLapTagName">
             <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
         </setting>
+        <setting propertyKey="@Properties.PhoneAlertTag" title="@Strings.PhoneAlertTagName">
+            <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
+        </setting>
         <setting propertyKey="@Properties.WorkoutAlertReadyTag" title="@Strings.WorkoutAlertReadyTagName">
             <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
         </setting>
@@ -19,7 +22,7 @@
             <settingConfig type="numeric" min="0" />
         </setting>
         <setting propertyKey="@Properties.WorkoutRedAlertTheshold" title="@Strings.WorkoutRedAlertThesholdName">
-            <settingConfig type="numeric" min="0" />
+            <settingConfig type="numeric" min="0" max="60" />
         </setting>
         <setting propertyKey="@Properties.OpenLapDisplayInSeconds" title="@Strings.OpenLapDisplayInSecondsName">
             <settingConfig type="numeric" min="1" />

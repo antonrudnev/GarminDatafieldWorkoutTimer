@@ -1,11 +1,12 @@
 <properties>
     <property id="DefaultTag" type="string">TIMER</property>
     <property id="OpenLapTag" type="string">OPEN LAP</property>
+    <property id="PhoneAlertTag" type="string">PHONE</property>
     <property id="WorkoutAlertReadyTag" type="string">READY</property>
     <property id="WorkoutRedAlertSetTag" type="string">SET</property>
     <property id="WorkoutRedAlertGoTag" type="string">GO</property>
     <property id="WorkoutAlertTheshold" type="number">40</property>
-    <property id="WorkoutRedAlertTheshold" type="number">10</property>
+    <property id="WorkoutRedAlertTheshold" type="number">15</property>
     <property id="OpenLapDisplayInSeconds" type="number">5</property>
     <property id="AllowedOffCourseDistance" type="number">100</property>
 </properties>
