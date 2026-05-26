@@ -9,7 +9,8 @@
     <string id="WorkoutAlertThesholdName">Workout alert theshold in seconds</string>
     <string id="WorkoutRedAlertThesholdName">Workout red alert theshold in seconds</string>
     <string id="OpenLapDisplayInSecondsName">Display open lap tag each second defined</string>
-    <string id="AllowedOffCourseDistanceName">Allowed off course distance for navigation mode</string>
+    <string id="AllowedOffCourseDistanceName">Allowed off course distance (m) for navigation mode</string>
+    <string id="MinDistanceToActivateName">Minimum distance (m) to run before fields are activated</string>
     <string id="AdvancedSettingsName">Advanced settings</string>
     <string id="AdvancedSettingsDesc">Access lower-level configurations for advanced customization</string>
 </strings>

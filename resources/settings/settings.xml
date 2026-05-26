@@ -30,5 +30,8 @@
         <setting propertyKey="@Properties.AllowedOffCourseDistance" title="@Strings.AllowedOffCourseDistanceName">
             <settingConfig type="numeric" min="100" />
         </setting>
+        <setting propertyKey="@Properties.MinDistanceToActivate" title="@Strings.MinDistanceToActivateName">
+            <settingConfig type="numeric" min="100" />
+        </setting>
     </group>
 </settings>

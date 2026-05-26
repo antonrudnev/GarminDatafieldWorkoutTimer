@@ -36,8 +36,8 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         mActivityState = DEFAULT;
         if (info.timerTime != null && info.elapsedDistance != null) {
             mActivityTimer = (info.timerTime / 1000).toNumber();
-            mActivityDistance = info.elapsedDistance / 1000;
-            if (mActivityDistance >= 0.2) {
+            mActivityDistance = info.elapsedDistance;
+            if (mActivityDistance >= Properties.getValue("MinDistanceToActivate")) {
                 mActivityState = DISTANCE;
                 mDistanceToDestination = 0;
                 mTimeToDestination = 0;
@@ -48,6 +48,11 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                         mActivityState = mActivityState | NAVIGATION;
                         mDistanceToDestination = info.distanceToDestination;
                         mTimeToDestination = (mDistanceToDestination / info.averageSpeed).toNumber();
+                }
+                if (System.getDeviceSettings().phoneConnected) {
+                    phoneConnected = true;
+                } else if (phoneConnected) {
+                    mActivityState = mActivityState | PHONE_ALERT;
                 }
             } 
             var workoutStepInfo = Activity.getCurrentWorkoutStep();
@@ -72,11 +77,6 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                     mActivityState = mActivityState | WORKOUT_OPEN_LAP;
                 }
             }
-            if (System.getDeviceSettings().phoneConnected) {
-                phoneConnected = true;
-            } else if (phoneConnected) {
-                mActivityState = mActivityState | PHONE_ALERT;
-            }
         }
     }
 
@@ -85,11 +85,11 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     function onUpdate(dc as Dc) as Void {
         var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
         if (mActivityState & WORKOUT != 0) {
-            timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), mActivityDistance.format("%.1f"), formatTime(mTimeToDestination, false), mActivityState);
+            timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), (mActivityDistance / 1000).format("%.1f"), formatTime(mTimeToDestination, false), mActivityState);
         } else if (mActivityState & NAVIGATION !=0) {
-            timerGauge.setValues(formatTime(mActivityTimer, false), formatTime(mTimeToDestination, false), mDistanceToDestination.format("%.1f"), mActivityDistance.format("%.1f"), mActivityState);
+            timerGauge.setValues(formatTime(mActivityTimer, false), formatTime(mTimeToDestination, false), (mDistanceToDestination / 1000).format("%.1f"), (mActivityDistance / 1000).format("%.1f"), mActivityState);
         } else {
-            timerGauge.setValues(formatTime(mActivityTimer, false), mActivityDistance.format("%.1f"), null, null, mActivityState);
+            timerGauge.setValues(formatTime(mActivityTimer, false), (mActivityDistance / 1000).format("%.1f"), null, null, mActivityState);
         }
         View.onUpdate(dc);
     }
