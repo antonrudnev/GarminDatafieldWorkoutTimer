@@ -125,19 +125,27 @@ class TimerGauge extends WatchUi.Drawable {
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 }
             } else {
-                mTextColor = Graphics.COLOR_WHITE;
                 if (seconds % 5 > 1 || mState & DISTANCE == 0) {
+                    mTextColor = Graphics.COLOR_WHITE;
                     mBorderColor = Graphics.COLOR_BLUE;
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 } else {
-                    if (seconds % 10 > 2 || mState & NAVIGATION == 0) {
+                    if (seconds % 10 > 2) {
                         mTextSecondary = mTextExtra1;
-                        mBorderColor = Graphics.COLOR_BLACK;
-                        mGaugeColor = Graphics.COLOR_DK_GRAY;
+                        if (mState & NAVIGATION != 0) {
+                            mTextColor = Graphics.COLOR_WHITE;
+                            mBorderColor = Graphics.COLOR_DK_GREEN;
+                            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                        } else {
+                            mTextColor = Graphics.COLOR_BLACK;
+                            mBorderColor = Graphics.COLOR_BLACK;
+                            mGaugeColor = Graphics.COLOR_BLUE;
+                        }
                     } else {
                         mTextSecondary = mTextExtra2;
-                        mBorderColor = Graphics.COLOR_DK_GREEN;
-                        mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                        mTextColor = Graphics.COLOR_WHITE;
+                        mBorderColor = Graphics.COLOR_BLACK;
+                        mGaugeColor = Graphics.COLOR_DK_GRAY;
                     }
                 }
             }
@@ -159,9 +167,15 @@ class TimerGauge extends WatchUi.Drawable {
                 }
             }
         } else if (mState & DISTANCE != 0) {
-            mTextColor = Graphics.COLOR_LT_GRAY;
-            mBorderColor = Graphics.COLOR_DK_GRAY;
-            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+            mTextColor = Graphics.COLOR_WHITE;
+            if (seconds % 5 > 1) {
+                mBorderColor = Graphics.COLOR_BLACK;
+                mGaugeColor = Graphics.COLOR_DK_GRAY;
+            } else {
+                mTextSecondary = mTextExtra1;
+                mBorderColor = Graphics.COLOR_DK_RED;
+                mGaugeColor = Graphics.COLOR_TRANSPARENT;
+            }
         } else {
             mTextSecondary = Properties.getValue("DefaultTag");
             mTextColor = Graphics.COLOR_WHITE;

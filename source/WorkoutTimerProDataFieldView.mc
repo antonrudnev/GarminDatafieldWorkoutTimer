@@ -11,6 +11,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     hidden var mActivityDistance = 0.0f;
     hidden var mWorkoutStepTimer = 0;
     hidden var mWorkoutPrevStepCompleteTime = 0;
+    hidden var mDistanceToComplete = 0.0f;
     hidden var mDistanceToDestination = 0.0f;
     hidden var mTimeToDestination = 0;
     hidden var phoneConnected = false;
@@ -62,7 +63,11 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                 if (workoutStep instanceof Activity.WorkoutIntervalStep) {
                     workoutStep = workoutStep.activeStep;
                 }
-                mWorkoutStepTimer = mActivityTimer - mWorkoutPrevStepCompleteTime;   
+                mWorkoutStepTimer = mActivityTimer - mWorkoutPrevStepCompleteTime;
+                if (info.averageSpeed != null) {
+                    mDistanceToComplete = (mWorkoutStepTimer * info.averageSpeed).toNumber();
+                    mDistanceToComplete = mDistanceToComplete > 200 ? mDistanceToComplete : 0;
+                }
                 if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_TIME) { 
                     if (workoutStep.durationValue != null) {
                         mWorkoutStepTimer = (workoutStep.durationValue - mWorkoutStepTimer).toNumber();
@@ -85,11 +90,11 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     function onUpdate(dc as Dc) as Void {
         var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
         if (mActivityState & WORKOUT != 0) {
-            timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), (mActivityDistance / 1000).format("%.1f"), formatTime(mTimeToDestination, false), mActivityState);
+            timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), mActivityState & NAVIGATION !=0 ? formatTime(mTimeToDestination, false) : formatDistance(mDistanceToComplete), formatDistance(mActivityDistance), mActivityState);
         } else if (mActivityState & NAVIGATION !=0) {
-            timerGauge.setValues(formatTime(mActivityTimer, false), formatTime(mTimeToDestination, false), (mDistanceToDestination / 1000).format("%.1f"), (mActivityDistance / 1000).format("%.1f"), mActivityState);
+            timerGauge.setValues(formatTime(mActivityTimer, false), formatTime(mTimeToDestination, false), formatDistance(mDistanceToDestination), formatDistance(mActivityDistance), mActivityState);
         } else {
-            timerGauge.setValues(formatTime(mActivityTimer, false), (mActivityDistance / 1000).format("%.1f"), null, null, mActivityState);
+            timerGauge.setValues(formatTime(mActivityTimer, false), formatDistance(mActivityDistance), format("$1$:$2$", [System.getClockTime().hour.format("%02d"), System.getClockTime().min.format("%02d")]), null, mActivityState);
         }
         View.onUpdate(dc);
     }
@@ -111,6 +116,14 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
             return format("$1$:$2$", [mins.format("%1d"), secs.format("%02d")]);
         } else {
             return format("$1$", [secs.format("%1d")]);
+        }
+    }
+
+    function formatDistance(meters as Float) as String {
+        if (meters < 1000 ) {
+            return (meters.toNumber() / 10 * 10).format("%1d") + " m";
+        } else {
+            return (meters / 1000).format("%.1f") + " K";
         }
     }
 
