@@ -64,20 +64,20 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                     workoutStep = workoutStep.activeStep;
                 }
                 mWorkoutStepTimer = mActivityTimer - mWorkoutPrevStepCompleteTime;
-                if (info.averageSpeed != null) {
-                    mDistanceToComplete = (mWorkoutStepTimer * info.averageSpeed).toNumber();
-                    mDistanceToComplete = mDistanceToComplete > 200 ? mDistanceToComplete : 0;
-                }
-                if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_TIME) { 
+                if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_TIME) {
                     if (workoutStep.durationValue != null) {
                         mWorkoutStepTimer = (workoutStep.durationValue - mWorkoutStepTimer).toNumber();
+                        if (info.averageSpeed != null) {
+                            mDistanceToComplete = (mWorkoutStepTimer * info.averageSpeed).toNumber();
+                            mDistanceToComplete = mDistanceToComplete > 200 ? mDistanceToComplete : 0;
+                        }
                         if (mWorkoutStepTimer < Properties.getValue("WorkoutAlertTheshold")) {
                             mActivityState = mActivityState | WORKOUT_ALERT;
                         }
                         if (mWorkoutStepTimer < Properties.getValue("WorkoutRedAlertTheshold")) {
                             mActivityState = mActivityState | WORKOUT_ALERT_RED;
                         }
-                    } 
+                    }
                 } else if (workoutStep.durationType == Activity.WORKOUT_STEP_DURATION_OPEN) {
                     mActivityState = mActivityState | WORKOUT_OPEN_LAP;
                 }
@@ -141,7 +141,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
             {
                 fontPrimary = (fontPrimary > 0 ? fontPrimary - 1 : 0) as FontType;
             }
-            flag = !flag;            
+            flag = !flag;
             height1 = dc.getFontHeight(fontSecondary);
             height2 = dc.getFontHeight(fontPrimary);
         }     
