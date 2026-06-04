@@ -8,11 +8,11 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
 
     hidden var mActivityState = DEFAULT;
     hidden var mActivityTimer = 0;
-    hidden var mActivityDistance = 0.0f;
+    hidden var mActivityDistance = 0.0;
     hidden var mWorkoutStepTimer = 0;
     hidden var mWorkoutPrevStepCompleteTime = 0;
-    hidden var mDistanceToComplete = 0.0f;
-    hidden var mDistanceToDestination = 0.0f;
+    hidden var mDistanceToComplete = 0.0;
+    hidden var mDistanceToDestination = 0.0;
     hidden var mTimeToDestination = 0;
     hidden var phoneConnected = false;
 
@@ -68,8 +68,8 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                     if (workoutStep.durationValue != null) {
                         mWorkoutStepTimer = (workoutStep.durationValue - mWorkoutStepTimer).toNumber();
                         if (info.averageSpeed != null) {
-                            mDistanceToComplete = (mWorkoutStepTimer * info.averageSpeed).toNumber();
-                            mDistanceToComplete = mDistanceToComplete > 200 ? mDistanceToComplete : 0;
+                            mDistanceToComplete = mWorkoutStepTimer * info.averageSpeed;
+                            System.println(mDistanceToComplete.toString() + "m, " + info.averageSpeed.toString() + "mps");
                         }
                         if (mWorkoutStepTimer < Properties.getValue("WorkoutAlertTheshold")) {
                             mActivityState = mActivityState | WORKOUT_ALERT;
@@ -120,10 +120,15 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     }
 
     function formatDistance(meters as Float) as String {
+        meters +=900;
         if (meters < 1000 ) {
             return (meters.toNumber() / 10 * 10).format("%1d") + " m";
         } else {
-            return (meters / 1000).format("%.1f") + " K";
+            if ((meters / 100).toNumber() % 10 == 0) {
+                return (meters / 1000).toNumber() + " KM";
+            } else {
+                return (meters / 1000).format("%.1f") + " K";
+            }
         }
     }
 
