@@ -120,7 +120,6 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     }
 
     function formatDistance(meters as Float) as String {
-        meters +=900;
         if (meters < 1000 ) {
             return (meters.toNumber() / 10 * 10).format("%1d") + " m";
         } else {
