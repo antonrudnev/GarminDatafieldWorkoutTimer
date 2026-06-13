@@ -2,6 +2,9 @@
     <setting propertyKey="@Properties.DefaultTag" title="@Strings.DefaultTagName">
         <settingConfig type="alphaNumeric" required="true" maxLength="10"/>
     </setting>
+    <setting propertyKey="@Properties.ExpandExtraFields" title="@Strings.ExpandExtraFieldsName">
+        <settingConfig type="boolean"/>
+    </setting>
     <group id="advancedSettings" title="@Strings.AdvancedSettingsName" description="@Strings.AdvancedSettingsDesc">
         <setting propertyKey="@Properties.OpenLapTag" title="@Strings.OpenLapTagName">
             <settingConfig type="alphaNumeric" required="true" maxLength="10"/>

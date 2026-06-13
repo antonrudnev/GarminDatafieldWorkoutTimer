@@ -26,7 +26,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         View.setLayout(Rez.Layouts.MainLayout(dc));
         var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
         var alignments = computeAlignments(dc);
-        timerGauge.setAlignments(alignments[0], alignments[1], alignments[2], alignments[3], alignments[4], alignments[5], alignments[6]);
+        timerGauge.setAlignments(alignments[0], alignments[1], alignments[2], alignments[3], alignments[4], alignments[5], alignments[6], alignments[7]);
     }
 
     // The given info object contains all the current workout information.
@@ -131,7 +131,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         }
     }
 
-    function computeAlignments(dc as Dc) as [FontType, FontType, Number, Number, Number, Number, Number] {
+    function computeAlignments(dc as Dc) as [FontType, FontType, Number, Number, Number, Number, Number, Boolean] {
         var fontPrimary = Graphics.FONT_NUMBER_THAI_HOT;
         var fontSecondary = Graphics.FONT_SMALL;
         var screenHeight = dc.getHeight();
@@ -165,17 +165,23 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
         } else if (obscurityFlags & OBSCURE_RIGHT != 0 && obscurityFlags & OBSCURE_LEFT == 0) {
             xShift = -dc.getTextWidthInPixels("0", fontSecondary);
         }
-        var y1 = (screenHeight - height1 - height2) / 2;
-        y1 = y1 >= 5 ? y1 : 5;
-        var y2 = y1 + height1;
+        var y1;
+        var y2;
+        var expandable = true;
         if (obscurityFlags & OBSCURE_TOP != 0 && obscurityFlags & OBSCURE_BOTTOM == 0) {
             y2 = screenHeight - height2;
             y1 = y2 - height1;
+            expandable = false;
         } else if (obscurityFlags & OBSCURE_BOTTOM != 0 && obscurityFlags & OBSCURE_TOP == 0) {
             y2 = 0;
             y1 = height2;
+            expandable = false;
+        } else {
+            y1 = (screenHeight - height1 - height2) / 2;
+            y1 = y1 >= 5 ? y1 : 5;
+            y2 = y1 + height1;
         }
-        return [fontPrimary, fontSecondary, height1, height2, y1, y2, xShift];
+        return [fontPrimary, fontSecondary, height1, height2, y1, y2, xShift, expandable];
     }
 
 }

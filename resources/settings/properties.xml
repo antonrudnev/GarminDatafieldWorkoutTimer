@@ -10,4 +10,5 @@
     <property id="OpenLapDisplayInSeconds" type="number">5</property>
     <property id="AllowedOffCourseDistance" type="number">100</property>
     <property id="MinDistanceToActivate" type="number">200</property>
+    <property id="ExpandExtraFields" type="boolean">false</property>
 </properties>

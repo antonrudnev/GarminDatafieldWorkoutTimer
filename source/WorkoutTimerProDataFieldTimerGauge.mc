@@ -36,6 +36,7 @@ class TimerGauge extends WatchUi.Drawable {
     hidden var mHeight2;
     hidden var mY1;
     hidden var mY2;
+    hidden var mExpandable;
 
     function initialize() {
         Drawable.initialize({:identifier => "TimerGauge"});
@@ -56,7 +57,7 @@ class TimerGauge extends WatchUi.Drawable {
         updateStyle();
     }
 
-    function setAlignments(fontPrimary as FontType, fontSecondary as FontType, height1 as Number, height2 as Number, y1 as Number, y2 as Number, xShift as Number) {
+    function setAlignments(fontPrimary as FontType, fontSecondary as FontType, height1 as Number, height2 as Number, y1 as Number, y2 as Number, xShift as Number, expandable as Boolean) {
         mFontPrimary = fontPrimary;
         mFontSecondary = fontSecondary;
         mHeight1 = height1;
@@ -64,6 +65,19 @@ class TimerGauge extends WatchUi.Drawable {
         mY1 = y1;
         mY2 = y2;
         mXShift = xShift;
+        mExpandable = expandable;
+    }
+
+    function swapHeights() as Void {
+        if (mExpandable) {
+            var z = mFontPrimary;
+            mFontPrimary = mFontSecondary;
+            mFontSecondary = z;
+            z = mHeight1;
+            mHeight1 = mHeight2;
+            mHeight2 = z;
+            mY2 = mY1 + mHeight1;
+        }
     }
 
     function draw(dc as Dc) as Void {
@@ -130,6 +144,7 @@ class TimerGauge extends WatchUi.Drawable {
                     mBorderColor = Graphics.COLOR_BLUE;
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 } else {
+                    swapHeights();
                     if (seconds % 10 > 2) {
                         mTextSecondary = mTextExtra1;
                         if (mState & NAVIGATION != 0) {
@@ -155,6 +170,7 @@ class TimerGauge extends WatchUi.Drawable {
                 mBorderColor = Graphics.COLOR_DK_GREEN;
                 mGaugeColor = Graphics.COLOR_TRANSPARENT;
             } else {
+                swapHeights();
                 mBorderColor = Graphics.COLOR_BLACK;
                 if (seconds % 10 > 2) {
                     mTextSecondary = mTextExtra1;
@@ -172,6 +188,7 @@ class TimerGauge extends WatchUi.Drawable {
                 mBorderColor = Graphics.COLOR_BLACK;
                 mGaugeColor = Graphics.COLOR_DK_GRAY;
             } else {
+                swapHeights();
                 mTextSecondary = mTextExtra1;
                 mBorderColor = Graphics.COLOR_DK_RED;
                 mGaugeColor = Graphics.COLOR_TRANSPARENT;
