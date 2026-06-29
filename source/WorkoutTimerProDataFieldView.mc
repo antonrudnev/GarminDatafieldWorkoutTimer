@@ -50,10 +50,12 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                         mDistanceToDestination = info.distanceToDestination;
                         mTimeToDestination = (mDistanceToDestination / info.averageSpeed).toNumber();
                 }
-                if (System.getDeviceSettings().phoneConnected) {
+                if (Properties.getValue("ShowPhoneAlert")) {
+                    if (System.getDeviceSettings().phoneConnected) {
                     phoneConnected = true;
-                } else if (phoneConnected) {
-                    mActivityState = mActivityState | PHONE_ALERT;
+                    } else if (phoneConnected) {
+                        mActivityState = mActivityState | PHONE_ALERT;
+                    }
                 }
             } 
             var workoutStepInfo = Activity.getCurrentWorkoutStep();

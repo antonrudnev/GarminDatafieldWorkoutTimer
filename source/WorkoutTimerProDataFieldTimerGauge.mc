@@ -38,6 +38,8 @@ class TimerGauge extends WatchUi.Drawable {
     hidden var mY2;
     hidden var mExpandable;
 
+    hidden var isExpanded = false;
+
     function initialize() {
         Drawable.initialize({:identifier => "TimerGauge"});
         mFontPrimary = Graphics.FONT_NUMBER_THAI_HOT;
@@ -77,6 +79,7 @@ class TimerGauge extends WatchUi.Drawable {
             mHeight1 = mHeight2;
             mHeight2 = z;
             mY2 = mY1 + mHeight1;
+            isExpanded = !isExpanded;
         }
     }
 
@@ -102,6 +105,9 @@ class TimerGauge extends WatchUi.Drawable {
     }
 
     function updateStyle() {
+        if (isExpanded) {
+            swapHeights();
+        }
         var seconds = System.getClockTime().sec;
         if (mState & WORKOUT != 0) {
             if (mState & WORKOUT_ALERT_RED != 0) {
@@ -144,7 +150,9 @@ class TimerGauge extends WatchUi.Drawable {
                     mBorderColor = Graphics.COLOR_BLUE;
                     mGaugeColor = Graphics.COLOR_TRANSPARENT;
                 } else {
-                    swapHeights();
+                    if (!isExpanded) {
+                        swapHeights();
+                    }
                     if (seconds % 10 > 2) {
                         mTextSecondary = mTextExtra1;
                         if (mState & NAVIGATION != 0) {
@@ -170,7 +178,9 @@ class TimerGauge extends WatchUi.Drawable {
                 mBorderColor = Graphics.COLOR_DK_GREEN;
                 mGaugeColor = Graphics.COLOR_TRANSPARENT;
             } else {
-                swapHeights();
+                if (!isExpanded) {
+                    swapHeights();
+                }
                 mBorderColor = Graphics.COLOR_BLACK;
                 if (seconds % 10 > 2) {
                     mTextSecondary = mTextExtra1;
@@ -188,7 +198,9 @@ class TimerGauge extends WatchUi.Drawable {
                 mBorderColor = Graphics.COLOR_BLACK;
                 mGaugeColor = Graphics.COLOR_DK_GRAY;
             } else {
-                swapHeights();
+                if (!isExpanded) {
+                    swapHeights();
+                }
                 mTextSecondary = mTextExtra1;
                 mBorderColor = Graphics.COLOR_DK_RED;
                 mGaugeColor = Graphics.COLOR_TRANSPARENT;
