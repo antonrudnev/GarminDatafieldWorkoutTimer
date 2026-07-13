@@ -10,8 +10,7 @@ enum ActivityState {
     WORKOUT             = 8,
     WORKOUT_ALERT       = 16,
     WORKOUT_ALERT_RED   = 32,
-    WORKOUT_OPEN_LAP    = 64,
-    PHONE_ALERT         = 128
+    WORKOUT_OPEN_LAP    = 64
 }
 
 class TimerGauge extends WatchUi.Drawable {
@@ -19,6 +18,9 @@ class TimerGauge extends WatchUi.Drawable {
     hidden var mTextColor as ColorValue = Graphics.COLOR_WHITE;
     hidden var mBorderColor as ColorValue = Graphics.COLOR_BLUE;
     hidden var mGaugeColor as ColorValue = Graphics.COLOR_DK_BLUE;
+
+    hidden var mBackground as ColorValue = Graphics.COLOR_BLACK;
+    hidden var mForeground as ColorValue = Graphics.COLOR_WHITE;
 
     hidden var mFontPrimary as FontType;
     hidden var mFontSecondary as FontType;
@@ -48,6 +50,16 @@ class TimerGauge extends WatchUi.Drawable {
         mTextSecondary = Properties.getValue("DefaultTag");
         mState = DEFAULT;
         updateStyle();
+    }
+
+    function setBackground(background as ColorValue) {
+        mBackground = background;
+        if (mBackground == Graphics.COLOR_BLACK) {
+            mForeground = Graphics.COLOR_WHITE;
+        } else {
+            mForeground = Graphics.COLOR_BLACK;
+        }
+        mTextColor = mForeground;
     }
 
     function setValues(textPrimary as String, textSecondary as String, textExtra1 as String or Null, textExtra2 as String or Null, state as Number) as Void {
@@ -92,7 +104,9 @@ class TimerGauge extends WatchUi.Drawable {
         mRectWidth = mRectWidth < maxWidth ? mRectWidth : maxWidth;
         mRectX = (screenWidth / 2) - (mRectWidth / 2);
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(mForeground, mBackground);
+        dc.clear();
+
         dc.drawText(screenWidth / 2 + mXShift, mY2, mFontPrimary, mTextPrimary, Graphics.TEXT_JUSTIFY_CENTER);
 
         dc.setPenWidth(4);
@@ -118,37 +132,38 @@ class TimerGauge extends WatchUi.Drawable {
                     mGaugeColor = Graphics.COLOR_DK_BLUE;
                 } else {
                     mTextSecondary = Properties.getValue("WorkoutRedAlertGoTag");
-                    mBorderColor = Graphics.COLOR_BLACK;
+                    mBorderColor = mBackground;
                     mGaugeColor = Graphics.COLOR_RED;
                 }
                 return;
             } else if (mState & WORKOUT_ALERT != 0) {
-                mTextColor = Graphics.COLOR_WHITE;
                 if (seconds & 1) {
                     mTextSecondary = Properties.getValue("WorkoutAlertReadyTag");
-                    mBorderColor = Graphics.COLOR_WHITE;
+                    mTextColor = Graphics.COLOR_WHITE;
+                    mBorderColor = mForeground;
                     mGaugeColor = Graphics.COLOR_DK_BLUE;
                 } else {
+                    mTextColor = mForeground;
                     mBorderColor = Graphics.COLOR_BLUE;
-                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                    mGaugeColor = mBackground;
                 }
                 return;
             } else if (mState & WORKOUT_OPEN_LAP != 0) {
                 if (seconds % Properties.getValue("OpenLapDisplayInSeconds") > 0) {
                     mTextColor = Graphics.COLOR_BLACK;
-                    mBorderColor = Graphics.COLOR_BLACK;
+                    mBorderColor = mBackground;
                     mGaugeColor = Graphics.COLOR_YELLOW;
                 } else {
                     mTextSecondary = Properties.getValue("OpenLapTag");;
-                    mTextColor = Graphics.COLOR_WHITE;
+                    mTextColor = mForeground;
                     mBorderColor = Graphics.COLOR_YELLOW;
-                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                    mGaugeColor = mBackground;
                 }
             } else {
                 if (seconds % 5 > 1 || mState & DISTANCE == 0) {
-                    mTextColor = Graphics.COLOR_WHITE;
+                    mTextColor = mForeground;
                     mBorderColor = Graphics.COLOR_BLUE;
-                    mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                    mGaugeColor = mBackground;
                 } else {
                     if (!isExpanded) {
                         swapHeights();
@@ -156,32 +171,32 @@ class TimerGauge extends WatchUi.Drawable {
                     if (seconds % 10 > 2) {
                         mTextSecondary = mTextExtra1;
                         if (mState & NAVIGATION != 0) {
-                            mTextColor = Graphics.COLOR_WHITE;
+                            mTextColor = mForeground;
                             mBorderColor = Graphics.COLOR_DK_GREEN;
-                            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                            mGaugeColor = mBackground;
                         } else {
                             mTextColor = Graphics.COLOR_BLACK;
-                            mBorderColor = Graphics.COLOR_BLACK;
+                            mBorderColor = mBackground;
                             mGaugeColor = Graphics.COLOR_BLUE;
                         }
                     } else {
                         mTextSecondary = mTextExtra2;
                         mTextColor = Graphics.COLOR_WHITE;
-                        mBorderColor = Graphics.COLOR_BLACK;
+                        mBorderColor = mBackground;
                         mGaugeColor = Graphics.COLOR_DK_GRAY;
                     }
                 }
             }
         } else if (mState & NAVIGATION != 0) {
             if (seconds % 5 > 1) {
-                mTextColor = Graphics.COLOR_WHITE;
+                mTextColor = mForeground;
                 mBorderColor = Graphics.COLOR_DK_GREEN;
-                mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                mGaugeColor = mBackground;
             } else {
                 if (!isExpanded) {
                     swapHeights();
                 }
-                mBorderColor = Graphics.COLOR_BLACK;
+                mBorderColor = mBackground;
                 if (seconds % 10 > 2) {
                     mTextSecondary = mTextExtra1;
                     mTextColor = Graphics.COLOR_BLACK;
@@ -193,30 +208,24 @@ class TimerGauge extends WatchUi.Drawable {
                 }
             }
         } else if (mState & DISTANCE != 0) {
-            mTextColor = Graphics.COLOR_WHITE;
             if (seconds % 5 > 1) {
-                mBorderColor = Graphics.COLOR_BLACK;
+                mTextColor = Graphics.COLOR_WHITE;
+                mBorderColor = mBackground;
                 mGaugeColor = Graphics.COLOR_DK_GRAY;
             } else {
                 if (!isExpanded) {
                     swapHeights();
                 }
                 mTextSecondary = mTextExtra1;
+                mTextColor = mForeground;
                 mBorderColor = Graphics.COLOR_DK_RED;
-                mGaugeColor = Graphics.COLOR_TRANSPARENT;
+                mGaugeColor = mBackground;
             }
         } else {
             mTextSecondary = Properties.getValue("DefaultTag");
-            mTextColor = Graphics.COLOR_WHITE;
-            mBorderColor = Graphics.COLOR_TRANSPARENT;
-            mGaugeColor = Graphics.COLOR_TRANSPARENT;
-        }
-
-        if (seconds & 1 && mState & PHONE_ALERT != 0) {
-            mTextSecondary = Properties.getValue("PhoneAlertTag");
-            mTextColor = Graphics.COLOR_RED;
-            mBorderColor = Graphics.COLOR_RED;
-            mGaugeColor = Graphics.COLOR_TRANSPARENT;
+            mTextColor = mForeground;
+            mBorderColor = mBackground;
+            mGaugeColor = mBackground;
         }
     }
 

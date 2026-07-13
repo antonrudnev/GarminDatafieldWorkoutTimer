@@ -5,9 +5,6 @@
     <setting propertyKey="@Properties.ExpandExtraFields" title="@Strings.ExpandExtraFieldsName">
         <settingConfig type="boolean"/>
     </setting>
-    <setting propertyKey="@Properties.ShowPhoneAlert" title="@Strings.ShowPhoneAlertName">
-        <settingConfig type="boolean"/>
-    </setting>
     <group id="advancedSettings" title="@Strings.AdvancedSettingsName" description="@Strings.AdvancedSettingsDesc">
         <setting propertyKey="@Properties.OpenLapTag" title="@Strings.OpenLapTagName">
             <settingConfig type="alphaNumeric" required="true" maxLength="10"/>

@@ -14,7 +14,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     hidden var mDistanceToComplete = 0.0;
     hidden var mDistanceToDestination = 0.0;
     hidden var mTimeToDestination = 0;
-    hidden var phoneConnected = false;
+    hidden var mCourseComplete = false;
 
     function initialize() {
         DataField.initialize();
@@ -45,17 +45,14 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
                 if (info has :distanceToDestination && info has :offCourseDistance
                             && info.distanceToDestination != null && info.offCourseDistance != null && info.averageSpeed != null
                             && info.averageSpeed > 0 && info.distanceToDestination > 0
-                            && info.offCourseDistance < Properties.getValue("AllowedOffCourseDistance")) {
+                            && info.offCourseDistance < Properties.getValue("AllowedOffCourseDistance")
+                            && !mCourseComplete) {
                         mActivityState = mActivityState | NAVIGATION;
                         mDistanceToDestination = info.distanceToDestination;
                         mTimeToDestination = (mDistanceToDestination / info.averageSpeed).toNumber();
-                }
-                if (Properties.getValue("ShowPhoneAlert")) {
-                    if (System.getDeviceSettings().phoneConnected) {
-                    phoneConnected = true;
-                    } else if (phoneConnected) {
-                        mActivityState = mActivityState | PHONE_ALERT;
-                    }
+                        if (info.distanceToDestination < 50){
+                            mCourseComplete = true;
+                        }
                 }
             } 
             var workoutStepInfo = Activity.getCurrentWorkoutStep();
@@ -91,6 +88,7 @@ class WorkoutTimerProDataFieldView extends WatchUi.DataField {
     // once a second when the data field is visible.
     function onUpdate(dc as Dc) as Void {
         var timerGauge = View.findDrawableById("TimerGauge") as TimerGauge;
+        timerGauge.setBackground(getBackgroundColor());
         if (mActivityState & WORKOUT != 0) {
             timerGauge.setValues(formatTime(mWorkoutStepTimer, mActivityState & WORKOUT_ALERT !=0 || mActivityState & WORKOUT_ALERT_RED !=0), formatTime(mActivityTimer, false), mActivityState & NAVIGATION !=0 ? formatTime(mTimeToDestination, false) : formatDistance(mDistanceToComplete), formatDistance(mActivityDistance), mActivityState);
         } else if (mActivityState & NAVIGATION !=0) {
