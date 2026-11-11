@@ -103,7 +103,6 @@ All settings can be customized via **Garmin Connect** or **Garmin Express**:
 
 ```text
 GarminDatafieldWorkoutTimer/
-├── .vscode/          # VS Code launch and build tasks
 ├── resources/        # App icons, strings, layouts, and settings XMLs
 ├── source/           # Monkey C (.mc) source files (WorkoutTimerProDataFieldView, TimerGauge, etc.)
 ├── manifest.xml      # App metadata, API level (5.2.0), and target devices
